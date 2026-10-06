@@ -1,30 +1,32 @@
-<p align="center">
-  <img src="assets/control-room.svg" width="1000" alt="Jishan Mulla — DevOps Engineer. Cloud and on-prem Kubernetes, repeatable delivery, observability and automation." />
-</p>
+<div align="center">
 
-### `> whoami`
+### `jishan@github ~ $ ./contributions.sh`
 
-I'm **Jishan Mulla**, a **DevOps Engineer** working across cloud and on-prem infrastructure. I build repeatable delivery workflows, operate Kubernetes clusters, and turn troubleshooting into practical automation.
+<img src="assets/contributions.svg?v=9b50560a3c71" width="880" alt="Jishan's publicly visible GitHub activity; refreshed daily. Includes anonymized private activity when publicly enabled." />
 
-**AWS · Kubernetes · Docker · Terraform · GitHub Actions · Flux CD · Prometheus · Grafana · Loki · Linux**
+<br>
 
-<p align="center">
-  <img src="assets/delivery-path.svg" width="1000" alt="Delivery workflow illustration: Git and GitHub → GitHub Actions → Docker → Kubernetes → metrics and logs." />
-</p>
+### `jishan@github ~ $ whoami`
 
-### `> current_focus`
+<table>
+<tr>
+<td valign="top"><img src="assets/devops-ascii.svg?v=9b2dfa3605e0" width="370" alt="Typing ASCII illustration of cloud infrastructure, servers and Jishan's terminal." /></td>
+<td valign="top"><img src="assets/info-card.svg?v=bb15482e8b39" width="490" alt="Jishan Mulla, DevOps Engineer. AWS, Kubernetes, Docker, Linux, GitHub Actions, Flux CD, Terraform, Prometheus, Grafana and Loki." /></td>
+</tr>
+</table>
 
-| Build | Operate | Improve |
-| :--- | :--- | :--- |
-| CI/CD and GitOps workflows | Cloud and on-prem Kubernetes | Reusable infrastructure automation |
-| Repeatable release processes | Metrics, logs and troubleshooting | Clear runbooks and recovery procedures |
+</div>
 
-<p align="center">
-  <img src="assets/contributions.svg?v=2" width="1000" alt="Public GitHub contribution calendar, refreshed daily through GitHub Actions. Snapshot date is shown in the graphic." />
-</p>
+### `jishan@github ~ $ cat philosophy.txt`
 
-### `> explore`
+Build repeatable infrastructure. Make delivery predictable. Understand failures through metrics and logs. Turn what you learn into automation and clear runbooks.
 
-[Repositories](https://github.com/JISHAN-HI?tab=repositories) · [GitHub activity](https://github.com/JISHAN-HI?tab=overview)
+### `jishan@github ~ $ ls focus/`
 
-<sub>Built with Python and self-contained SVGs. Workflow animation is illustrative; contribution activity uses real public GitHub data.</sub>
+**Cloud & on-prem Kubernetes** · **CI/CD & GitOps** · **Infrastructure as code** · **Observability** · **Recovery & troubleshooting**
+
+### `jishan@github ~ $ open connections`
+
+[GitHub repositories](https://github.com/JISHAN-HI?tab=repositories) · [Activity](https://github.com/JISHAN-HI?tab=overview)
+
+<sub>Python + self-contained animated SVGs. Refreshed with GitHub Actions. Layout inspired by [Avi Vashishta's animated README](https://www.avivashishta.com/blog/build-animated-github-profile-readme); DevOps artwork and implementation customized for Jishan.</sub>

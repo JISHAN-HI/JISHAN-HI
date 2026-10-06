@@ -1,75 +1,112 @@
-"""Generate self-contained profile SVGs. Python 3.11+, no packages required."""
+"""DevOps terminal profile. Standard library only; all SVGs are self-contained."""
 from pathlib import Path
 from html import escape
+import datetime as dt
+import hashlib
 import json
+import re
 
-ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'assets'
-OUT.mkdir(exist_ok=True)
+ROOT=Path(__file__).resolve().parents[1]
+ASSETS=ROOT/'assets'
+ASSETS.mkdir(exist_ok=True)
+INK='#dae5e4'; MUTED='#869a9d'; GREEN='#74e5b5'; BG='#0b1216'
 
-def text(x, y, content, size=14, color='#9cacbf', extra=''):
-    return f'<text x="{x}" y="{y}" font-size="{size}" fill="{color}" {extra}>{escape(str(content))}</text>'
+def t(x,y,s,size=13,color=INK,extra=''):
+    return f'<text x="{x}" y="{y}" fill="{color}" font-size="{size}" {extra}>{escape(str(s))}</text>'
 
-def svg(name, height, title, body):
-    header = f'''<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="{height}" viewBox="0 0 1000 {height}" role="img" aria-labelledby="title desc">
-<title id="title">{escape(title)}</title><desc id="desc">Animated DevOps profile artwork for Jishan Mulla. Decorative animations, not live infrastructure status.</desc>
-<defs><pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M 32 0 L 0 0 0 32" fill="none" stroke="#172536" stroke-width="0.6"/></pattern><linearGradient id="fade"><stop stop-color="#123743"/><stop offset="1" stop-color="#0c1420"/></linearGradient></defs>
-<style>text{{font-family:Consolas,'Liberation Mono',monospace}}.reveal{{animation:appear .7s both;animation-delay:var(--d,0s)}}@keyframes appear{{from{{opacity:0;transform:translateY(8px)}}to{{opacity:1;transform:translateY(0)}}}}.trace{{stroke-dasharray:1400;animation:draw 2s ease-out both}}@keyframes draw{{from{{stroke-dashoffset:1400}}to{{stroke-dashoffset:0}}}}@media(prefers-reduced-motion:reduce){{*{{animation:none!important}}}}</style>
-<rect x="1" y="1" width="998" height="{height-2}" rx="18" fill="#0c1420" stroke="#243549"/><rect x="2" y="2" width="996" height="{height-4}" rx="18" fill="url(#grid)"/>
-'''
-    (OUT/name).write_text(header+body+'</svg>', encoding='utf-8')
+def frame(w,h,title,body,defs=''):
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{escape(title)}">
+<title>{escape(title)}</title><defs>{defs}</defs>
+<style>text{{font-family:'DejaVu Sans Mono',Consolas,monospace}}.line{{animation:line .55s ease-out both;animation-delay:var(--d,0s)}}@keyframes line{{from{{opacity:0;transform:translateY(4px)}}to{{opacity:1;transform:translateY(0)}}}}.cell{{animation:cell .5s ease-out both;animation-delay:var(--d,0s)}}@keyframes cell{{from{{opacity:0;transform:translateY(-5px)}}to{{opacity:1;transform:translateY(0)}}}}@media(prefers-reduced-motion:reduce){{*{{animation:none!important}}.wipe{{display:none}}}}</style>
+<rect x=".5" y=".5" width="{w-1}" height="{h-1}" rx="10" fill="{BG}" stroke="#233237"/>
+{body}</svg>'''
 
-body = '<path d="M1 48H999" stroke="#243549"/>'
-for i,c in enumerate(['#ff6b78','#e8bb66','#57d6ad']):
-    body += f'<circle cx="{26+i*20}" cy="25" r="5" fill="{c}"/>'
-body += text(112,30,'jishan@github:~ / infrastructure-terminal',12)
-body += text(824,30,'PROFILE / 01',11,'#56dac8')
-body += '<rect x="36" y="83" width="212" height="222" rx="16" fill="url(#fade)" stroke="#2c5966"/>'
-body += '<path class="trace" d="M61 122V108H83 M202 108H223V130 M61 267V281H83 M201 281H223V260" fill="none" stroke="#59e1cf" stroke-width="2"/>'
-body += text(70,222,'JM',94,'#e3f9f5','font-weight="bold" class="reveal"')
-body += text(86,258,'&gt;_'.replace('&gt;','>'),20,'#57d6ad')
-body += '<g class="reveal" style="--d:.25s">'+text(285,101,'ENGINEERING / OPERATIONS / AUTOMATION',11,'#57d6ad')+text(281,158,'JISHAN MULLA',47,'#eef5ff','font-weight="bold"')+text(285,195,'DevOps Engineer',21,'#6ed7ee')+'</g>'
-body += '<g class="reveal" style="--d:.6s">'+text(285,236,'From source code to dependable infrastructure.',16,'#c3cfdd')+text(285,265,'Cloud + on-prem Kubernetes. Repeatable delivery.',14)+text(285,289,'Observe. Diagnose. Automate. Improve.',14)+'</g>'
-body += '<path d="M36 332H964" stroke="#243549"/>'
-body += text(36,366,'01 / BUILD',12,'#57d6ad')+text(357,366,'02 / OPERATE',12,'#6ed7ee')+text(692,366,'03 / IMPROVE',12,'#c1a5ff')
-body += text(36,393,'Pipelines & infrastructure',13)+text(357,393,'Clusters & observability',13)+text(692,393,'Automation & recovery',13)
-svg('control-room.svg',426,'Jishan Mulla — DevOps Engineer',body)
+def save(name,svg):
+    (ASSETS/name).write_text(svg,encoding='utf-8')
 
-body = text(32,38,'DELIVERY PATH',12,'#57d6ad')+text(740,38,'WORKFLOW ILLUSTRATION',11)
-body += text(32,73,'Commit to confidence.',25,'#edf5ff','font-weight="bold"')
-stages=[('01','SOURCE','Git / GitHub'),('02','BUILD','GitHub Actions'),('03','PACKAGE','Docker'),('04','DEPLOY','Kubernetes'),('05','OBSERVE','Metrics / Logs')]
-for i,(number,label,stack) in enumerate(stages):
-    x=32+i*191
-    if i<4: body+=f'<path d="M{x+173} 143h18" stroke="#57d6ad" stroke-width="2" class="trace"/>'
-    body+=f'<g class="reveal" style="--d:{i*.25}s"><rect x="{x}" y="103" width="173" height="113" rx="10" fill="#101e2c" stroke="#2a4659"/>'
-    body+=text(x+15,129,number,11,'#57d6ad')+text(x+15,161,label,17,'#edf5ff')+text(x+15,191,stack,11)+'</g>'
-body+=text(32,253,'AUTOMATE THE REPETITION. KEEP THE ENGINEERING.',12,'#6ed7ee')
-svg('delivery-path.svg',280,'Delivery workflow: source, build, package, deploy, observe',body)
+def bar(w,label):
+    return ''.join(f'<circle cx="{18+i*13}" cy="19" r="3.5" fill="{c}"/>' for i,c in enumerate(['#c57878','#cfb478','#74bd99']))+t(68,23,label,10,MUTED)+f'<path d="M1 38H{w-1}" stroke="#233237"/>'
 
-body = text(32,39,'CONTRIBUTION SIGNAL',12,'#57d6ad')
-datafile=ROOT/'data/contributions.json'
-if datafile.exists():
-    import datetime
-    data=json.loads(datafile.read_text())
-    days=data['days']
-    start=datetime.date.fromisoformat(days[0]['date'])
-    start-=datetime.timedelta(days=(start.weekday()+1)%7)
-    palette=['#172637','#164840','#197361','#32ac87','#65e5b5']
-    weeks=max((datetime.date.fromisoformat(d['date'])-start).days//7 for d in days)+1
-    step=min(17,920/weeks)
-    for d in days:
-        delta=(datetime.date.fromisoformat(d['date'])-start).days
-        x=40+(delta//7)*step; y=93+(delta%7)*18
-        body+=f'<rect class="reveal" style="--d:{min(delta//7*.012, .7):.3f}s" x="{x}" y="{y}" width="{step-3}" height="14" rx="3" fill="{palette[d["level"]]}"><title>{d["date"]}: activity level {d["level"]}</title></rect>'
-    body+=text(32,67,'Public GitHub contribution calendar',16,'#edf5ff')
-    body+=text(32,252,'Snapshot: '+data['updated']+' UTC',11)
-    body+=text(663,252,'LESS',10)
-    for i,c in enumerate(palette): body+=f'<rect x="{707+i*20}" y="241" width="14" height="14" rx="3" fill="{c}"/>'
-    body+=text(818,252,'MORE',10)
-else:
-    body+=text(32,99,'Your activity belongs here.',27,'#edf5ff')
-    body+=text(32,147,'Awaiting the first GitHub Actions refresh.',15,'#6ed7ee')
-    body+=text(32,180,'The workflow will fetch your real public contribution calendar.',13)
-    body+=text(32,239,'NO SAMPLE COUNTS / NO INVENTED STATS',11,'#57d6ad')
-svg('contributions.svg',280,'GitHub contribution activity for JISHAN-HI',body)
-print('Generated three SVG assets.')
+# A character-rendered infrastructure console, not a photo or a fake live monitor.
+art=[
+'             .-----------------.',
+'          .-\'   CLOUD / EDGE    `-.',
+'        .\'                       `.',
+'        `----._____________.-----\'',
+'                  | |',
+'          +-------+-+-------+',
+'          |                 |',
+'     .----+----.       .----+----.',
+'     |  [:::]  |       |  [:::]  |',
+'     |  [:::]  |       |  [:::]  |',
+'     |  [:::]  |       |  [:::]  |',
+'     `----+----\'       `----+----\'',
+'          |                 |',
+'          +--------+--------+',
+'                   |',
+'          .--------+--------.',
+'          |    >_  JISHAN    |',
+'          |  build / deploy |',
+'          | observe / heal  |',
+'          `-----------------\'',
+]
+body=bar(370,'infra-as-code.sh')
+body+=t(22,64,'$ ./render-infrastructure',11,GREEN)
+for i,line in enumerate(art):
+    y=94+i*13
+    body+=t(17,y,line,10.4,INK,'xml:space="preserve"')
+    # Opaque covers wipe away one row at a time; text is visible without SMIL.
+    body+=f'<rect class="wipe" x="16" y="{y-11}" width="0" height="13" fill="{BG}"><animate attributeName="x" values="16;353" dur=".15s" begin="{.25+i*.1:.2f}s" fill="freeze"/><animate attributeName="width" values="337;0" dur=".15s" begin="{.25+i*.1:.2f}s" fill="freeze"/><set attributeName="width" to="337" begin="0s" end="{.25+i*.1:.2f}s"/></rect>'
+body+=t(24,386,'INFRASTRUCTURE IS A CRAFT.',11,GREEN)
+body+=t(24,408,'Make it repeatable. Make it observable.',9.5,MUTED)
+save('devops-ascii.svg',frame(370,438,'Animated ASCII cloud, servers and DevOps terminal',body))
+
+body=bar(490,'jishan@github: ~')
+body+=t(24,72,'jishan@github',21,GREEN,'font-weight="bold"')
+body+=t(24,94,'------------------------------',12,MUTED)
+rows=[('Name','Jishan Mulla'),('Role','DevOps Engineer'),('Focus','Cloud + on-prem infrastructure'),('Cloud','AWS'),('Runtime','Kubernetes / Docker / Linux'),('Delivery','GitHub Actions / Flux CD'),('IaC','Terraform'),('Observe','Prometheus / Grafana / Loki'),('Approach','Automate. Observe. Improve.')]
+for i,(key,value) in enumerate(rows):
+    body+=f'<g class="line" style="--d:{.35+i*.16:.2f}s">'+t(24,125+i*27,key,12,GREEN)+t(103,125+i*27,':',12,MUTED)+t(120,125+i*27,value,11.5)+'</g>'
+for i,c in enumerate(['#233237','#648b80','#74e5b5','#a9c6b2','#7499b3','#b3a0bf','#d8c28d','#dae5e4']):
+    body+=f'<rect x="{24+i*27}" y="376" width="27" height="15" fill="{c}"/>'
+body+=t(24,419,'$ less toil; more engineering_',11,MUTED)
+save('info-card.svg',frame(490,438,'Jishan Mulla DevOps neofetch information card',body))
+
+data=json.loads((ROOT/'data/contributions.json').read_text())
+days=data['days']; start=dt.date.fromisoformat(days[0]['date'])
+start-=dt.timedelta(days=(start.weekday()+1)%7)
+active=sum(d['level']>0 for d in days)
+best=run=0
+for d in days:
+    run=run+1 if d['level'] else 0
+    best=max(best,run)
+weeks=(dt.date.fromisoformat(days[-1]['date'])-start).days//7+1
+step=min(14.8,790/weeks)
+palette=['#17252a','#20483d','#2a785b','#43b984','#83efbc']
+body=bar(880,'contributions --last-year')
+body+=t(25,69,'A year of shipping, one day at a time.',16,INK)
+last_month=None
+for d in days:
+    date=dt.date.fromisoformat(d['date']); delta=(date-start).days; week,row=divmod(delta,7)
+    x=51+week*step; y=112+row*17
+    if date.day<=7 and date.month!=last_month and row==0:
+        body+=t(x,100,date.strftime('%b'),9,MUTED); last_month=date.month
+    body+=f'<rect class="cell" style="--d:{week*.018+row*.026:.3f}s" x="{x:.2f}" y="{y}" width="{step-3:.2f}" height="13" rx="2.5" fill="{palette[d["level"]]}"><title>{date}: activity level {d["level"]}</title></rect>'
+for label,row in [('Mon',1),('Wed',3),('Fri',5)]:body+=t(14,122+row*17,label,9,MUTED)
+body+='<path d="M25 245H855" stroke="#233237"/>'
+body+=t(25,271,f'{active} active days',12,GREEN)+t(225,271,f'{best}-day longest active streak',11,INK)
+body+=t(25,295,'Publicly visible activity · '+data['updated']+' UTC',10,MUTED)
+body+=t(665,271,'Less',9,MUTED)
+for i,c in enumerate(palette):body+=f'<rect x="{697+i*20}" y="261" width="13" height="13" rx="2" fill="{c}"/>'
+body+=t(807,271,'More',9,MUTED)
+save('contributions.svg',frame(880,318,'Publicly visible GitHub activity for JISHAN-HI',body))
+
+# Content-based image versions avoid keeping an older calendar in README caches.
+readme=ROOT/'README.md'
+if readme.exists():
+    content=readme.read_text(encoding='utf-8')
+    for name in ['devops-ascii.svg','info-card.svg','contributions.svg']:
+        digest=hashlib.sha256((ASSETS/name).read_bytes()).hexdigest()[:12]
+        content=re.sub(r'assets/'+re.escape(name)+r'(?:\?v=[^"\s]*)?',f'assets/{name}?v={digest}',content)
+    readme.write_text(content,encoding='utf-8')
+print(f'Built terminal profile: {active} active days; longest active streak {best} days.')
