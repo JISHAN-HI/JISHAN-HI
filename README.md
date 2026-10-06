@@ -20,7 +20,7 @@ I'm **Jishan Mulla**, a **DevOps Engineer** working across cloud and on-prem inf
 | Repeatable release processes | Metrics, logs and troubleshooting | Clear runbooks and recovery procedures |
 
 <p align="center">
-  <img src="assets/contributions.svg" width="1000" alt="Public GitHub contribution calendar, refreshed daily through GitHub Actions. Snapshot date is shown in the graphic." />
+  <img src="assets/contributions.svg?v=2" width="1000" alt="Public GitHub contribution calendar, refreshed daily through GitHub Actions. Snapshot date is shown in the graphic." />
 </p>
 
 ### `> explore`
