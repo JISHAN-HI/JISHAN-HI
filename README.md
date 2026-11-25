@@ -2,7 +2,7 @@
 
 ### `jishan@github ~ $ ./contributions.sh`
 
-<img src="assets/contributions.svg?v=b79437474426" width="880" alt="Jishan's publicly visible GitHub activity; refreshed daily. Includes anonymized private activity when publicly enabled." />
+<img src="assets/contributions.svg?v=97ec3a251a3c" width="880" alt="Jishan's publicly visible GitHub activity; refreshed daily. Includes anonymized private activity when publicly enabled." />
 
 <br>
 
